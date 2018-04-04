@@ -10,6 +10,8 @@ import gifAnimation.*;
 CountdownTimer timer;
 String timerCallbackInfo = "";
 
+int[] scale = {0, 3, 5, 7, 10};
+
 Boton[][] bts = new Boton[16][8];
 
 Gif loopingGif;
@@ -20,6 +22,9 @@ float xunit;
 float yunit;
 float radii;
 boolean touch = false;
+
+boolean playing = false;
+
 PImage btImg;
 PImage backgroundImg;
 PImage play;
@@ -40,22 +45,31 @@ Boton btPlay;
 Boton btStop;
 Boton btPause;
 Boton btClear;
+Boton btRock;
+Boton btDance;
+
 
 void setup() {
   size(displayWidth, displayHeight);
+  frameRate(100);
   xunit = width/24;
   yunit = height/24;
   radii = 0.3*xunit;
   // create and start a timer that has been configured to trigger onTickEvents every 100 ms and run for 5000 ms
-  timer = CountdownTimerService.getNewCountdownTimer(this).configure(200, 5000000);
+  timer = CountdownTimerService.getNewCountdownTimer(this).configure(100, 5000000);
   //timer = CountdownTimerService.getNewCountdownTimer(this).configure(100, 5000).start();
   MidiBus.list();
   myBus = new MidiBus(this, -1, "Bus 1"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
 
   loopingGif = new Gif(this, "lavalamp.gif");
+  
+  //loopingGif.resize(loopingGif.width*2, loopingGif.height*2);
+  
   loopingGif.loop();
-  btImg = loadImage("Hover_M.png");
-  backgroundImg = loadImage("12.png");
+  btImg = loadImage("button_off.png");
+  btImg.resize(int(xunit*0.8), int(yunit*0.8)); 
+  backgroundImg = loadImage("voro.png");
+  backgroundImg.resize(width, height);
   play = loadImage("play.png");
   stop = loadImage("stop.png");
   pause = loadImage("pause2.png");
@@ -72,7 +86,8 @@ void setup() {
 
   for (int y = 0; y < 8; y++) {
     for (int x = 0; x < 16; x++) {
-      bts[x][y] = new Boton(new PVector((xunit*4)+(x*xunit), (yunit*14)+(y*yunit)), x, y);
+      bts[x][y] = new Boton(new PVector((xunit*4)+(x*xunit), (yunit*14)+(y*yunit)), x, y, btImg);
+      //bts[x][y] = new Boton(new PVector((xunit*4)+(x*xunit), (yunit*14)+(y*yunit)), x, y);
     }
   }
 
@@ -80,10 +95,15 @@ void setup() {
   btStop = new Boton(new PVector(11 * xunit + (0.65*xunit), (0.25*yunit) + 22 * yunit), 0, 0);
   btPause = new Boton(new PVector(12 * xunit + (xunit), (0.1*yunit) + 22 * yunit), 0, 0);
   btClear = new Boton(new PVector(20 * xunit + (xunit), (0.1*yunit) + 14 * yunit), 0, 0);
+  btRock = new Boton(new PVector(20 * xunit + (xunit), (0.1*yunit) + 16 * yunit), 0, 0);
+  btDance = new Boton(new PVector(20 * xunit + (xunit), (0.1*yunit) + 18 * yunit), 0, 0);
 }
 
 void draw() {
-  image(backgroundImg, 0, 0, width, height);
+  println(frameRate);
+  //background(127);
+  noTint();
+  image(backgroundImg, 0, 0);
   fill(255);
   textAlign(LEFT, TOP);
 
@@ -98,7 +118,8 @@ void draw() {
   textAlign(CENTER, CENTER);
   text(timerCallbackInfo, width/2, height/2);
 
-  image(loopingGif, xunit*11, yunit*3, loopingGif.width*2, loopingGif.height*2);
+  //image(loopingGif, xunit*11, yunit*3, loopingGif.width*2, loopingGif.height*2);
+  image(loopingGif, xunit*11, yunit*3);
   
   image(chan1, 3*xunit, yunit*14, xunit, yunit);
   image(chan2, 3*xunit, yunit*15, xunit, yunit);
@@ -130,6 +151,10 @@ void draw() {
   handlePause();
   //--------
   handleClear();
+  //--------
+  handleRock();
+  //--------
+  handleDance();
 }
 
 //------------------------------------------------------------------------------------
@@ -141,7 +166,9 @@ void handlePlay() {
     println("Starting timer...");
     timer.start();
     btPlay.on = false;
+    playing = true;
   }
+  
 }
 
 //------------------------------------------------------------------------------------
@@ -156,7 +183,9 @@ void handleStop() {
     timer.reset(CountdownTimer.StopBehavior.STOP_IMMEDIATELY);
     btStop.on = false;
     pos = 0;
+    playing = false;  
   }
+  
 }
 
 //------------------------------------------------------------------------------------
@@ -164,12 +193,21 @@ void handlePause() {
   fill(255);
   rect(12 * xunit+(xunit), (0.1*yunit) + 22 * yunit, xunit, yunit, 0.3*xunit);
   image(pause, 12 * xunit+(xunit), (0.1*yunit) + 22 * yunit, xunit, yunit);
-  if (btPause.on) {
+  println ("pause " + btPause.on, " playing "+ playing);
+  if (btPause.on && playing) {
     println("Stopping timer...");
     timer.stop(CountdownTimer.StopBehavior.STOP_IMMEDIATELY);
     btPause.on = false;
+    playing = false;
+  }
+  if(btPause.on && !playing){
+    timer.start();
+    btPause.on = false;
+    playing = true;
   }
 }
+
+
 
 //------------------------------------------------------------------------------------
 void handleClear() {
@@ -187,6 +225,32 @@ void handleClear() {
     btClear.on = false;
   }
 }
+
+//------------------------------------------------------------------------------------
+void handleRock() {
+  fill(255);
+  rect(20 * xunit + (xunit), (0.1*yunit) + 16 * yunit, xunit, yunit, 0.3*xunit);
+  image(clear, 20 * xunit + (xunit), (0.1*yunit) + 16 * yunit, xunit, yunit);
+  if (btRock.on) {
+    println("Rock...");
+    btRock.on = false;
+    myBus = new MidiBus(this, -1, "Bus 1"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+    
+  }
+}
+
+//------------------------------------------------------------------------------------
+void handleDance() {
+  fill(255);
+  rect(20 * xunit + (xunit), (0.1*yunit) + 18 * yunit, xunit, yunit, 0.3*xunit);
+  image(clear, 20 * xunit + (xunit), (0.1*yunit) + 18 * yunit, xunit, yunit);
+  if (btDance.on) {
+    println("Dance...");
+    btDance.on = false;
+    myBus = new MidiBus(this, -1, "Bus 2"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+  }
+}
+
 //------------------------------------------------------------------------------------
 void onTickEvent(CountdownTimer t, long timeLeftUntilFinish) {
   timerCallbackInfo = "[tick] - timeLeft: " + timeLeftUntilFinish + "ms";
@@ -195,7 +259,36 @@ void onTickEvent(CountdownTimer t, long timeLeftUntilFinish) {
 
   for (int y = 0; y < 8; y++) {
     if (bts[pos][y].on) {
-      myBus.sendNoteOn(y, 60, 90); // Send a Midi noteOn
+      switch(y){
+      case 0:
+      myBus.sendNoteOn(y, 48+scale[int(random(0,4.99))], 90); // Send a Midi noteOn
+      break;
+      case 1:
+      myBus.sendNoteOn(y, 60+scale[int(random(0,4.99))], 90); // Send a Midi noteOn
+      break;
+      case 2:
+      myBus.sendNoteOn(y, 48+scale[int(random(0,4.99))], 90); // Send a Midi noteOn
+      break;
+      case 3:
+      int note = int(random(0,4.99));
+      myBus.sendNoteOn(y, 72+note, 90); // Send a Midi noteOn
+      myBus.sendNoteOn(y, 72+note-12, 90); // Send a Midi noteOn
+      
+      break;
+      case 4:
+      myBus.sendNoteOn(4, 36, 90); // Send a Midi noteOn
+      break;
+      case 5:
+      myBus.sendNoteOn(4, 37, 90); // Send a Midi noteOn
+      break;
+      case 6:
+      myBus.sendNoteOn(4, 42, 90); // Send a Midi noteOn
+      break;
+      case 7:
+      myBus.sendNoteOn(4, 40, 90); // Send a Midi noteOn
+      break;
+      }
+      
     }
   }
 }
@@ -243,6 +336,8 @@ void mouseClicked() {
   btStop.select();
   btPause.select();
   btClear.select();
+  btRock.select();
+  btDance.select();
 }
 
 //------------------------------------------------------------------------------------
@@ -263,4 +358,6 @@ void handleTouchEvents() {
   btStop.select();
   btPause.select();
   btClear.select();
+  btRock.select();
+  btDance.select();
 }
