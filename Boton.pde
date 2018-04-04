@@ -32,8 +32,8 @@ class Boton {
     if (on) {
 
       if (btImg != null) {
-        //tint(127, 85, 40, 175);
-        image(btImg, location.x+(0.1*xunit), location.y+(0.1*yunit), w, h);
+        tint(255, 0, 0);
+        image(btImg, location.x+(0.1*xunit), location.y+(0.1*yunit));
       } else {
         fill(127, 85, 40, 175);
         rect(location.x+(0.1*xunit), location.y+(0.1*yunit), w, h, radii);
@@ -41,8 +41,8 @@ class Boton {
     } else {
 
       if (btImg != null) {
-        //tint(85, 40, 127, 175);
-        image(btImg, location.x+(0.1*xunit), location.y+(0.1*yunit), w, h);
+        tint(0, 255, 0);
+        image(btImg, location.x+(0.1*xunit), location.y+(0.1*yunit));
       } else {
         fill(85, 40, 127, 175);
         rect(location.x+(0.1*xunit), location.y+(0.1*yunit), w, h, radii);
